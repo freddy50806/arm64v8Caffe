@@ -1,45 +1,29 @@
 FROM arm64v8/ubuntu:16.04
 
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        cmake \
-        git \
-        wget \
-        libatlas-base-dev \
-        libboost-all-dev \
-        libgflags-dev \
-        libgoogle-glog-dev \
-        libhdf5-serial-dev \
-        libleveldb-dev \
-        liblmdb-dev \
-        libopencv-dev \
-        libprotobuf-dev \
-        libsnappy-dev \
-        protobuf-compiler \
-        python-dev \
-        python-numpy \
-        python-pip \
-        python-setuptools \
-        libffi-dev\
-        python-scipy && \
-    rm -rf /var/lib/apt/lists/*
-
 ENV CAFFE_ROOT=/opt/caffe
 WORKDIR $CAFFE_ROOT
+ARG CLONE_TAG=master
 
-ARG CLONE_TAG=1.0
-
-RUN git clone -b ${CLONE_TAG} --depth 1 https://github.com/BVLC/caffe.git . && \
-    pip install --upgrade pip==9.0.3 && \
-    cd python && for req in $(cat requirements.txt) pydot; do pip install $req; done && cd .. && \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential\
+    git\
+	cmake\
+    ca-certificates openssl \
+    libboost-all-dev\
+    libprotobuf-dev\
+    libleveldb-dev\
+    libsnappy-dev\
+    libopencv-dev\
+    libhdf5-serial-dev\
+    protobuf-compiler\
+    libatlas-base-dev\
+    libgflags-dev\
+    libgoogle-glog-dev\
+    liblmdb-dev&&\
+    rm -rf /var/lib/apt/lists/* &&\
+    git clone https://github.com/BVLC/caffe.git . &&\
+    cp Makefile.config.example Makefile.config && \
     mkdir build && cd build && \
-    cmake -DCPU_ONLY=1 .. && \
-    make -j"$(nproc)"
-
-ENV PYCAFFE_ROOT $CAFFE_ROOT/python
-ENV PYTHONPATH $PYCAFFE_ROOT:$PYTHONPATH
-ENV PATH $CAFFE_ROOT/build/tools:$PYCAFFE_ROOT:$PATH
-RUN echo "$CAFFE_ROOT/build/lib" >> /etc/ld.so.conf.d/caffe.conf && ldconfig
-
-WORKDIR /workspace
+    cmake -DCPU_ONLY=ON -DBUILD_python=OFF -DBUILD_docs=OFF .. && \
+    make all -j"$(nproc)" &&\
+    make install
