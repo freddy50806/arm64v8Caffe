@@ -28,9 +28,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV CAFFE_ROOT=/opt/caffe
 WORKDIR $CAFFE_ROOT
 
-ARG CLONE_TAG=1.0
+ARG CLONE_TAG=ceil_1.0
 
-RUN git clone -b ${CLONE_TAG} --depth 1 https://github.com/BVLC/caffe.git . && \
+RUN git clone -b ${CLONE_TAG} --depth 1 https://github.com/freddy50806/caffe.git . && \
     pip install --upgrade pip==9.0.3 && \
     cd python && for req in $(cat requirements.txt) pydot; do pip install $req; done && cd .. && \
     mkdir build && cd build && \
